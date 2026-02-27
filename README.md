@@ -66,6 +66,41 @@ A full-stack appointment booking system for small businesses (salons, clinics, t
 
 ---
 
+## Screenshots
+
+### Authentication
+| Login | Sign Up |
+|-------|---------|
+| ![Login](public/screenshots/login.png) | ![Sign Up](public/screenshots/signUp.png) |
+
+### Admin View
+| Dashboard | Weekly Calendar |
+|-----------|----------------|
+| ![Dashboard](public/screenshots/admin_dashboard.png) | ![Calendar](public/screenshots/admin_calendar.png) |
+
+| Services | Time Slots |
+|----------|-----------|
+| ![Services](public/screenshots/admin_services.png) | ![Time Slots](public/screenshots/admin_timeslots.png) |
+
+| Book Appointment |
+|-----------------|
+| ![Book Appointment](public/screenshots/admim_bookAppointment.png) |
+
+### Staff View
+| Dashboard | Weekly Calendar |
+|-----------|----------------|
+| ![Dashboard](public/screenshots/staff_dashboard.png) | ![Calendar](public/screenshots/staff_calendar.png) |
+
+| Services | Time Slots |
+|----------|-----------|
+| ![Services](public/screenshots/staff_services.png) | ![Time Slots](public/screenshots/stafff_timeslots.png) |
+
+| Book Appointment |
+|-----------------|
+| ![Book Appointment](public/screenshots/staff_bookAppointment.png) |
+
+---
+
 ## Role Permissions
 
 | Feature | Admin | Staff |

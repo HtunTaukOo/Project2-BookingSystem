@@ -1,36 +1,217 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QueueEase — Web-Based Appointment Booking System
+
+A full-stack appointment booking system for small businesses (salons, clinics, tutors). Built with Next.js, Tailwind CSS, and MongoDB Atlas.
+
+---
+
+## Team Members
+
+| Member | Student ID | Responsibilities |
+|--------|-----------|-----------------|
+| Zwe Khant Lin | 6632710 | Member |
+| Tun Tauk Oo | 6611302 | Service Management, Time Slot Management, Dashboard UI, Backend APIs, Auth System |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 15 (App Router), React 19, TypeScript |
+| Styling | Tailwind CSS 4 |
+| Backend | Next.js API Routes |
+| Database | MongoDB Atlas + Mongoose ODM |
+| Auth | localStorage-based session (role-aware) |
+| Deployment | Vercel + MongoDB Atlas |
+
+---
+
+## Features
+
+### Authentication
+- Login / Register with email and password
+- Two roles: **Admin** and **Staff**
+- Route protection — unauthenticated users are redirected to `/login`
+
+### Dashboard
+- Stats overview: Total, Today, Confirmed, Pending, Cancelled appointments
+- Full appointment list with status badges
+- Change appointment status (Pending / Confirmed / Cancelled)
+- Edit appointment details (Admin only)
+- Delete appointments (Admin and Staff)
+
+### Weekly Schedule
+- 7-day calendar view (Mon–Sun)
+- Navigate between weeks (Prev / Next / Today)
+- Today's column highlighted in blue
+- Appointments displayed per day with status badges
+- Weekly appointments list sorted by date and time
+
+### Service Management
+- View all services with name, description, duration, and price
+- Add / Edit / Delete services (Admin only)
+- Staff can view services (read-only)
+
+### Time Slot Management
+- View time slots grouped by date
+- Add / Edit / Delete time slots (Admin only)
+- Toggle availability per slot (Admin only)
+- Staff can view slots (read-only)
+
+### Book Appointment
+- Select service from dropdown (populated from DB)
+- Select date, then choose from available time slots for that date
+- Booked time slots are automatically marked as unavailable
+- Reads logged-in user's email from session
+
+---
+
+## Role Permissions
+
+| Feature | Admin | Staff |
+|---------|-------|-------|
+| View Dashboard | ✅ | ✅ |
+| Change appointment status | ✅ | ✅ |
+| Edit appointment | ✅ | ❌ |
+| Delete appointment | ✅ | ✅ |
+| View Weekly Schedule | ✅ | ✅ |
+| View Services | ✅ | ✅ |
+| Add / Edit / Delete Services | ✅ | ❌ |
+| View Time Slots | ✅ | ✅ |
+| Add / Edit / Delete Time Slots | ✅ | ❌ |
+| Toggle slot availability | ✅ | ❌ |
+| Book Appointment | ✅ | ✅ |
+
+---
+
+## Data Models
+
+### User
+```
+name, email, password, role (admin | staff)
+```
+
+### Service
+```
+name, description, duration (minutes), price
+```
+
+### TimeSlot
+```
+date, startTime, endTime, isAvailable
+```
+
+### Appointment
+```
+name, service, date, time, userEmail, status (pending | confirmed | cancelled)
+```
+
+---
 
 ## Getting Started
 
-First, run the development server:
-
+### 1. Install dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Create `.env.local`
+```env
+MONGODB_URI=your_mongodb_connection_string
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Run the development server
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Seed Test Data
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+To populate the database with sample data, send a POST request to the seed endpoint:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+curl -X POST http://localhost:3000/api/seed
+```
 
-## Deploy on Vercel
+This creates:
+- 2 users (admin + staff)
+- 4 services (Haircut, Hair Coloring, Beard Trim, Deep Conditioning)
+- 24 time slots across 3 days
+- 5 sample appointments
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Test Accounts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@queueease.com | admin123 |
+| Staff | alice@queueease.com | staff123 |
+
+---
+
+## API Endpoints
+
+### Auth
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Login user |
+
+### Appointments
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/appointments/list` | Get all appointments |
+| POST | `/api/appointments/create` | Create appointment + mark slot unavailable |
+| PUT | `/api/appointments/update/[id]` | Update appointment |
+| DELETE | `/api/appointments/delete/[id]` | Delete appointment |
+
+### Services
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/services/list` | Get all services |
+| POST | `/api/services/create` | Create service |
+| PUT | `/api/services/update/[id]` | Update service |
+| DELETE | `/api/services/delete/[id]` | Delete service |
+
+### Time Slots
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/timeslots/list` | Get all time slots |
+| POST | `/api/timeslots/create` | Create time slot |
+| PUT | `/api/timeslots/update/[id]` | Update time slot |
+| DELETE | `/api/timeslots/delete/[id]` | Delete time slot |
+
+---
+
+## Project Structure
+
+```
+├── app/
+│   ├── api/
+│   │   ├── appointments/  (create, list, update, delete)
+│   │   ├── auth/          (login, register)
+│   │   ├── services/      (create, list, update, delete)
+│   │   ├── timeslots/     (create, list, update, delete)
+│   │   └── seed/          (test data)
+│   ├── calendar/          (weekly schedule view)
+│   ├── dashboard/         (appointments dashboard)
+│   ├── login/
+│   ├── register/
+│   ├── schedule/          (book appointment)
+│   ├── services/
+│   └── timeslots/
+├── components/
+│   ├── AppShell.tsx       (auth guard + layout)
+│   └── Sidebar.tsx        (navigation)
+├── lib/
+│   ├── mongodb.ts         (DB connection)
+│   └── session.ts         (localStorage session helpers)
+└── models/
+    ├── Appointment.js
+    ├── Service.js
+    ├── TimeSlot.js
+    └── User.js
+```

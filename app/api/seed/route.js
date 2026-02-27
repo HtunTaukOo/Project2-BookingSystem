@@ -7,9 +7,6 @@ import Appointment from "@/models/Appointment";
 import bcrypt from "bcryptjs";
 
 export async function POST() {
-  return NextResponse.json({ error: "Seed endpoint is disabled" }, { status: 404 });
-
-  // eslint-disable-next-line no-unreachable
   try {
     await connectDB();
 

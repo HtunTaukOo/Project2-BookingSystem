@@ -4,6 +4,7 @@ import User from "@/models/User";
 import Service from "@/models/Service";
 import TimeSlot from "@/models/TimeSlot";
 import Appointment from "@/models/Appointment";
+import bcrypt from "bcryptjs";
 
 export async function POST() {
   return NextResponse.json({ error: "Seed endpoint is disabled" }, { status: 404 });
@@ -21,9 +22,11 @@ export async function POST() {
     ]);
 
     // Users
+    const adminHash = await bcrypt.hash("admin123", 10);
+    const staffHash = await bcrypt.hash("staff123", 10);
     await User.insertMany([
-      { name: "Admin User", email: "admin@queueease.com", password: "admin123", role: "admin" },
-      { name: "Staff Alice", email: "alice@queueease.com", password: "staff123", role: "staff" },
+      { name: "Admin User", email: "admin@queueease.com", password: adminHash, role: "admin" },
+      { name: "Staff Alice", email: "alice@queueease.com", password: staffHash, role: "staff" },
     ]);
 
     // Services

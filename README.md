@@ -6,8 +6,8 @@ A full-stack appointment booking system for small businesses (salons, clinics, t
 
 ## Team Members
 
-| Zwe Khant Lin | 6632710 |
-| Tun Tauk Oo | 6611302 |
+Tun Tauk Oo  6611302 
+Zwe Khant Lin  6632710
 
 ---
 

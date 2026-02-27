@@ -5,11 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getUser, clearUser, SessionUser } from "@/lib/session";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: "📊" },
-  { href: "/services", label: "Services", icon: "🛠️" },
-  { href: "/timeslots", label: "Time Slots", icon: "🕐" },
-  { href: "/schedule", label: "Book Appointment", icon: "📅" },
+const allNavItems = [
+  { href: "/dashboard", label: "Dashboard", icon: "📊", adminOnly: false },
+  { href: "/calendar", label: "Weekly Schedule", icon: "🗓️", adminOnly: false },
+  { href: "/services", label: "Services", icon: "🛠️", adminOnly: false },
+  { href: "/timeslots", label: "Time Slots", icon: "🕐", adminOnly: false },
+  { href: "/schedule", label: "Book Appointment", icon: "📅", adminOnly: false },
 ];
 
 export default function Sidebar() {
@@ -26,11 +27,17 @@ export default function Sidebar() {
     router.replace("/login");
   };
 
+  const navItems = allNavItems.filter(
+    (item) => !item.adminOnly || user?.role === "admin"
+  );
+
   return (
-    <aside className="w-56 bg-white shadow-md flex flex-col min-h-screen">
+    <aside className="w-56 bg-white shadow-md flex flex-col h-screen sticky top-0 overflow-y-auto">
       <div className="px-6 py-5 border-b border-gray-100">
         <h1 className="text-xl font-bold text-blue-600">QueueEase</h1>
-        <p className="text-xs text-gray-400 mt-0.5">Admin Panel</p>
+        <p className="text-xs text-gray-400 mt-0.5">
+          {user?.role === "admin" ? "Admin Panel" : "Staff Panel"}
+        </p>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">

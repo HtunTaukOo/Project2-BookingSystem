@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getUser } from "@/lib/session";
 
 interface TimeSlot {
   _id: string;
@@ -16,6 +17,7 @@ export default function TimeSlotsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ date: "", startTime: "", endTime: "", isAvailable: true });
   const [loading, setLoading] = useState(false);
+  const isAdmin = getUser()?.role === "admin";
 
   useEffect(() => {
     fetchSlots();
@@ -70,7 +72,6 @@ export default function TimeSlotsPage() {
     fetchSlots();
   };
 
-  // Group slots by date
   const grouped = slots.reduce<Record<string, TimeSlot[]>>((acc, s) => {
     if (!acc[s.date]) acc[s.date] = [];
     acc[s.date].push(s);
@@ -79,53 +80,62 @@ export default function TimeSlotsPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Time Slot Management</h1>
-
-      {/* Add Time Slot Form */}
-      <div className="bg-white rounded-xl shadow p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">Add New Time Slot</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Date</label>
-            <input
-              type="date"
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={form.date}
-              onChange={(e) => setForm({ ...form, date: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Start Time</label>
-            <input
-              type="time"
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={form.startTime}
-              onChange={(e) => setForm({ ...form, startTime: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">End Time</label>
-            <input
-              type="time"
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={form.endTime}
-              onChange={(e) => setForm({ ...form, endTime: e.target.value })}
-            />
-          </div>
-        </div>
-        <button
-          onClick={handleCreate}
-          disabled={loading}
-          className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition disabled:opacity-50"
-        >
-          {loading ? "Adding..." : "Add Time Slot"}
-        </button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">
+          {isAdmin ? "Time Slot Management" : "Available Time Slots"}
+        </h1>
+        {!isAdmin && (
+          <p className="text-sm text-gray-500 mt-1">View-only — contact an admin to make changes</p>
+        )}
       </div>
+
+      {/* Add Time Slot Form — Admin only */}
+      {isAdmin && (
+        <div className="bg-white rounded-xl shadow p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">Add New Time Slot</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Date</label>
+              <input
+                type="date"
+                className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Start Time</label>
+              <input
+                type="time"
+                className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.startTime}
+                onChange={(e) => setForm({ ...form, startTime: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">End Time</label>
+              <input
+                type="time"
+                className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.endTime}
+                onChange={(e) => setForm({ ...form, endTime: e.target.value })}
+              />
+            </div>
+          </div>
+          <button
+            onClick={handleCreate}
+            disabled={loading}
+            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition disabled:opacity-50"
+          >
+            {loading ? "Adding..." : "Add Time Slot"}
+          </button>
+        </div>
+      )}
 
       {/* Slots grouped by date */}
       {Object.keys(grouped).length === 0 ? (
         <div className="bg-white rounded-xl shadow p-12 text-center text-gray-400">
-          No time slots yet. Add one above.
+          No time slots yet.
         </div>
       ) : (
         Object.entries(grouped).map(([date, dateSlots]) => (
@@ -140,19 +150,19 @@ export default function TimeSlotsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <input
                         type="date"
-                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={editForm.date}
                         onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
                       />
                       <input
                         type="time"
-                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={editForm.startTime}
                         onChange={(e) => setEditForm({ ...editForm, startTime: e.target.value })}
                       />
                       <input
                         type="time"
-                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={editForm.endTime}
                         onChange={(e) => setEditForm({ ...editForm, endTime: e.target.value })}
                       />
@@ -177,31 +187,44 @@ export default function TimeSlotsPage() {
                         <span className="font-medium text-gray-800">
                           {s.startTime} – {s.endTime}
                         </span>
-                        <button
-                          onClick={() => toggleAvailability(s)}
-                          className={`text-xs px-2 py-1 rounded-full font-medium transition ${
+                        {/* Staff sees badge only; Admin sees clickable toggle */}
+                        {isAdmin ? (
+                          <button
+                            onClick={() => toggleAvailability(s)}
+                            className={`text-xs px-2 py-1 rounded-full font-medium transition ${
+                              s.isAvailable
+                                ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                : "bg-red-100 text-red-700 hover:bg-red-200"
+                            }`}
+                          >
+                            {s.isAvailable ? "Available" : "Unavailable"}
+                          </button>
+                        ) : (
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                             s.isAvailable
-                              ? "bg-green-100 text-green-700 hover:bg-green-200"
-                              : "bg-red-100 text-red-700 hover:bg-red-200"
-                          }`}
-                        >
-                          {s.isAvailable ? "Available" : "Unavailable"}
-                        </button>
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}>
+                            {s.isAvailable ? "Available" : "Unavailable"}
+                          </span>
+                        )}
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(s)}
-                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(s._id)}
-                          className="text-red-500 hover:text-red-700 text-sm font-medium"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      {isAdmin && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(s)}
+                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(s._id)}
+                            className="text-red-500 hover:text-red-700 text-sm font-medium"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </li>

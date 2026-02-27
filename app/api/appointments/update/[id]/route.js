@@ -8,9 +8,10 @@ export async function PUT(req, { params }) {
     await connectDB();
 
     const body = await req.json();
+    const { id } = await params;
 
     const updated = await Appointment.findByIdAndUpdate(
-      new mongoose.Types.ObjectId(params.id),
+      new mongoose.Types.ObjectId(id),
       body,
       { new: true }
     );

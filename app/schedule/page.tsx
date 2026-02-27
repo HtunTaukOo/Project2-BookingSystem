@@ -1,27 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getUser } from "@/lib/session";
+
+interface Service {
+  _id: string;
+  name: string;
+  duration: number;
+  price: number;
+}
+
+interface TimeSlot {
+  _id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+}
 
 export default function SchedulePage() {
   const [name, setName] = useState("");
   const [service, setService] = useState("");
   const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [timeSlotId, setTimeSlotId] = useState("");
+  const [services, setServices] = useState<Service[]>([]);
+  const [allSlots, setAllSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  useEffect(() => {
+    fetch("/api/services/list")
+      .then((res) => res.json())
+      .then((data) => setServices(data.services || []));
+    fetch("/api/timeslots/list")
+      .then((res) => res.json())
+      .then((data) => setAllSlots(data.slots || []));
+  }, []);
+
+  // Filter available slots for the selected date
+  const availableSlots = allSlots.filter(
+    (s) => s.date === date && s.isAvailable
+  );
+
   const handleBooking = async () => {
-    if (!name || !service || !date || !time) {
+    if (!name || !service || !date || !timeSlotId) {
       alert("Please fill all fields");
       return;
     }
+
+    const selectedSlot = allSlots.find((s) => s._id === timeSlotId);
+    const user = getUser();
 
     setLoading(true);
     try {
       const res = await fetch("/api/appointments/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, service, date, time, userEmail: "demo@test.com" }),
+        body: JSON.stringify({
+          name,
+          service,
+          date,
+          time: selectedSlot ? `${selectedSlot.startTime} – ${selectedSlot.endTime}` : "",
+          timeSlotId,
+          userEmail: user?.email ?? "unknown",
+        }),
       });
 
       const data = await res.json();
@@ -30,7 +72,11 @@ export default function SchedulePage() {
         setName("");
         setService("");
         setDate("");
-        setTime("");
+        setTimeSlotId("");
+        // Re-fetch slots so booked slot disappears
+        const fresh = await fetch("/api/timeslots/list");
+        const freshData = await fresh.json();
+        setAllSlots(freshData.slots || []);
         setTimeout(() => setSuccess(false), 3000);
       } else {
         alert(data.error || "Booking failed");
@@ -41,6 +87,8 @@ export default function SchedulePage() {
       setLoading(false);
     }
   };
+
+  const selectedService = services.find((s) => s.name === service);
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
@@ -59,7 +107,7 @@ export default function SchedulePage() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
           <input
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter customer name"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -68,33 +116,55 @@ export default function SchedulePage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
-          <input
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter service name"
+          <select
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={service}
             onChange={(e) => setService(e.target.value)}
+          >
+            <option value="">Select a service</option>
+            {services.map((s) => (
+              <option key={s._id} value={s.name}>
+                {s.name} — {s.duration} min / ${s.price}
+              </option>
+            ))}
+          </select>
+          {selectedService && (
+            <p className="text-xs text-gray-400 mt-1">
+              Duration: {selectedService.duration} min · Price: ${selectedService.price}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <input
+            type="date"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={date}
+            onChange={(e) => { setDate(e.target.value); setTimeSlotId(""); }}
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-            <input
-              type="date"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-            <input
-              type="time"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Time Slot</label>
+          {!date ? (
+            <p className="text-sm text-gray-400 italic">Select a date first</p>
+          ) : availableSlots.length === 0 ? (
+            <p className="text-sm text-red-400">No available time slots for this date</p>
+          ) : (
+            <select
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={timeSlotId}
+              onChange={(e) => setTimeSlotId(e.target.value)}
+            >
+              <option value="">Select a time slot</option>
+              {availableSlots.map((s) => (
+                <option key={s._id} value={s._id}>
+                  {s.startTime} – {s.endTime}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <button

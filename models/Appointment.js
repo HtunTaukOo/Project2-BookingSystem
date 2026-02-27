@@ -5,7 +5,12 @@ const AppointmentSchema = new mongoose.Schema({
   service: String,
   date: String,
   time: String,
-  userEmail: String
-}, { timestamps: true });   
+  userEmail: String,
+  status: {
+    type: String,
+    enum: ["pending", "confirmed", "cancelled"],
+    default: "pending",
+  },
+}, { timestamps: true });
 
 export default mongoose.models.Appointment || mongoose.model("Appointment", AppointmentSchema);

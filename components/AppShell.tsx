@@ -6,6 +6,7 @@ import Sidebar from "./Sidebar";
 import { getUser } from "@/lib/session";
 
 const PUBLIC_PATHS = ["/login", "/register"];
+const ADMIN_ONLY_PATHS: string[] = [];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,6 +19,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       const user = getUser();
       if (!user) {
         router.replace("/login");
+        return;
+      }
+      // Redirect staff away from admin-only pages
+      if (user.role !== "admin" && ADMIN_ONLY_PATHS.includes(pathname)) {
+        router.replace("/dashboard");
         return;
       }
     }

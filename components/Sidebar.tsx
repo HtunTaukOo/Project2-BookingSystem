@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getUser, clearUser, SessionUser } from "@/lib/session";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "📊" },
@@ -12,6 +14,17 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<SessionUser | null>(null);
+
+  useEffect(() => {
+    setUser(getUser());
+  }, []);
+
+  const handleLogout = () => {
+    clearUser();
+    router.replace("/login");
+  };
 
   return (
     <aside className="w-56 bg-white shadow-md flex flex-col min-h-screen">
@@ -40,8 +53,26 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="px-6 py-4 border-t border-gray-100">
-        <p className="text-xs text-gray-400">QueueEase v1.0</p>
+      {/* User info + logout */}
+      <div className="px-4 py-4 border-t border-gray-100 space-y-3">
+        {user && (
+          <div className="px-2">
+            <p className="text-sm font-medium text-gray-700 truncate">{user.name}</p>
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+              user.role === "admin"
+                ? "bg-purple-100 text-purple-700"
+                : "bg-gray-100 text-gray-600"
+            }`}>
+              {user.role}
+            </span>
+          </div>
+        )}
+        <button
+          onClick={handleLogout}
+          className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 transition font-medium"
+        >
+          <span>🚪</span> Logout
+        </button>
       </div>
     </aside>
   );

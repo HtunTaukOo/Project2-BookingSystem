@@ -187,27 +187,17 @@ export default function TimeSlotsPage() {
                         <span className="font-medium text-gray-800">
                           {s.startTime} – {s.endTime}
                         </span>
-                        {/* Staff sees badge only; Admin sees clickable toggle */}
-                        {isAdmin ? (
-                          <button
-                            onClick={() => toggleAvailability(s)}
-                            className={`text-xs px-2 py-1 rounded-full font-medium transition ${
-                              s.isAvailable
-                                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                : "bg-red-100 text-red-700 hover:bg-red-200"
-                            }`}
-                          >
-                            {s.isAvailable ? "Available" : "Unavailable"}
-                          </button>
-                        ) : (
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        {/* Both admin and staff can toggle availability */}
+                        <button
+                          onClick={() => toggleAvailability(s)}
+                          className={`text-xs px-2 py-1 rounded-full font-medium transition ${
                             s.isAvailable
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}>
-                            {s.isAvailable ? "Available" : "Unavailable"}
-                          </span>
-                        )}
+                              ? "bg-green-100 text-green-700 hover:bg-green-200"
+                              : "bg-red-100 text-red-700 hover:bg-red-200"
+                          }`}
+                        >
+                          {s.isAvailable ? "Available" : "Unavailable"}
+                        </button>
                       </div>
                       {isAdmin && (
                         <div className="flex gap-2">
